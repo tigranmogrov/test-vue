@@ -27,6 +27,15 @@ const sortedPosts = computed(() =>
   filteredAndSorted(postsData, selectedSortVal, searchParam)
 );
 
+const deletePost = (id: number) => {
+  API.delete(`${API_URL}/users/${id}`)
+    .then((res) => {
+      console.log(res);
+      postsData.value = postsData.value.filter((el) => el.id !== id);
+    })
+    .catch((e) => console.log(e));
+};
+
 const getPostInfo = (props: IPostInfoProps) => {
   componentName.value = props.method;
   switch (props.method) {
