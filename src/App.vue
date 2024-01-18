@@ -1,13 +1,16 @@
 <script setup lang="ts">
 import ICard from '@/components/I-card.vue';
+import IDetails from '@/components/I-details.vue';
+import IModal from '@/components/I-modal.vue';
 import ISearch from '@/components/I-search.vue';
 import ISorting from '@/components/I-sorting.vue';
 import ISpinner from '@/components/I-spinner.vue';
+import IUpdatePost from '@/components/I-update-post.vue';
 import { filteredAndSorted } from '@/composable/post/filteredAndSorted';
 import { API_URL, sortOptions } from '@/constants';
 import { API } from '@/fetchApi';
 import { IPost, IPostInfoProps, MethodEnum } from '@/types';
-import { computed, ref } from 'vue';
+import { computed, reactive, ref, shallowRef } from 'vue';
 
 const postsData = ref<IPost[]>([]);
 const isLoading = ref(true);
@@ -43,10 +46,34 @@ const deletePost = (id: number) => {
     .catch((e) => console.log(e));
 };
 
+const updatePost = (data: IPost) => {
+  postsData.value = postsData.value.map((obj) =>
+    obj.id === data.id ? { ...data } : obj
+  );
+};
+
 const removeModal = (state: boolean) => {
   isModalState.value = state;
   currentPost.value = undefined;
 };
+
+const dynamicComponents = reactive({
+  'show-info': {
+    components: shallowRef(IDetails),
+    props: { post: currentPost },
+    event: {},
+  },
+  update: {
+    components: shallowRef(IUpdatePost),
+    props: { post: currentPost },
+    event: {
+      name: 'updatePost',
+      method: updatePost,
+    },
+  },
+});
+
+const getComponent = computed(() => dynamicComponents[componentName.value]);
 
 const getPostInfo = (props: IPostInfoProps) => {
   componentName.value = props.method;
@@ -92,6 +119,11 @@ getPosts();
         v-scroll-lock="isModalState"
         :modal-state="isModalState"
         @updateState="removeModal">
+        <component
+          v-if="componentName !== ''"
+          :is="getComponent.components"
+          v-bind="{ ...getComponent.props }"
+          @[getComponent.event.name]="getComponent.event.method" />
       </i-modal>
     </teleport>
   </div>
