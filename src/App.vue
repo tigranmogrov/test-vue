@@ -6,13 +6,14 @@ import ISpinner from '@/components/I-spinner.vue';
 import { filteredAndSorted } from '@/composable/post/filteredAndSorted';
 import { API_URL, sortOptions } from '@/constants';
 import { API } from '@/fetchApi';
-import { IPost } from '@/types';
+import { IPost, IPostInfoProps, MethodEnum } from '@/types';
 import { computed, ref } from 'vue';
 
 const postsData = ref<IPost[]>([]);
 const isLoading = ref(true);
 const selectedSortVal = ref('');
 const searchParam = ref('');
+const componentName = ref('');
 
 const getPosts = () => {
   API.get(`${API_URL}/users`)
@@ -25,6 +26,18 @@ const getPosts = () => {
 const sortedPosts = computed(() =>
   filteredAndSorted(postsData, selectedSortVal, searchParam)
 );
+
+const getPostInfo = (props: IPostInfoProps) => {
+  componentName.value = props.method;
+  switch (props.method) {
+    case MethodEnum.DELETE:
+      break;
+    case MethodEnum.UPDATE:
+      break;
+    case MethodEnum.SHOW_INFO:
+      break;
+  }
+};
 getPosts();
 </script>
 
@@ -40,7 +53,11 @@ getPosts();
         </div>
         <i-spinner v-if="isLoading" :is-loading="isLoading" />
         <div v-else class="grid-col-4">
-          <i-card v-for="post in sortedPosts" :key="post.id" :post="post" />
+          <i-card
+            v-for="post in sortedPosts"
+            :key="post.id"
+            :post="post"
+            @getPostInfo="getPostInfo" />
         </div>
       </div>
     </div>
