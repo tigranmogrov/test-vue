@@ -12,7 +12,7 @@ defineProps<{
     <div class="card__body">
       <button
         @click="
-          $emit('getPostInfo', {
+          $emit('postAction', {
             id: post.id,
             method: 'show-info',
           } as IPostInfoProps)
@@ -25,7 +25,7 @@ defineProps<{
       }}</a>
       <button
         @click="
-          $emit('getPostInfo', {
+          $emit('postAction', {
             id: post.id,
             method: 'delete',
           } as IPostInfoProps)
@@ -36,7 +36,7 @@ defineProps<{
 
       <button
         @click="
-          $emit('getPostInfo', {
+          $emit('postAction', {
             id: post.id,
             method: 'update',
           } as IPostInfoProps)
