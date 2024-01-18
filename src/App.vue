@@ -14,6 +14,8 @@ const isLoading = ref(true);
 const selectedSortVal = ref('');
 const searchParam = ref('');
 const componentName = ref('');
+const isModalState = ref(false);
+const currentPost = ref<IPost | undefined>(undefined);
 
 const getPosts = () => {
   API.get(`${API_URL}/users`)
@@ -26,6 +28,11 @@ const getPosts = () => {
 const sortedPosts = computed(() =>
   filteredAndSorted(postsData, selectedSortVal, searchParam)
 );
+const findCurrentPost = (id: number) =>
+  postsData.value.find((post) => post.id === id);
+
+const getCurrentPost = (id: number) =>
+  (currentPost.value = findCurrentPost(id));
 
 const deletePost = (id: number) => {
   API.delete(`${API_URL}/users/${id}`)
@@ -36,14 +43,24 @@ const deletePost = (id: number) => {
     .catch((e) => console.log(e));
 };
 
+const removeModal = (state: boolean) => {
+  isModalState.value = state;
+  currentPost.value = undefined;
+};
+
 const getPostInfo = (props: IPostInfoProps) => {
   componentName.value = props.method;
   switch (props.method) {
     case MethodEnum.DELETE:
+      deletePost(props.id);
       break;
     case MethodEnum.UPDATE:
+      getCurrentPost(props.id);
+      isModalState.value = true;
       break;
     case MethodEnum.SHOW_INFO:
+      getCurrentPost(props.id);
+      isModalState.value = true;
       break;
   }
 };
@@ -70,5 +87,12 @@ getPosts();
         </div>
       </div>
     </div>
+    <teleport to="body">
+      <i-modal
+        v-scroll-lock="isModalState"
+        :modal-state="isModalState"
+        @updateState="removeModal">
+      </i-modal>
+    </teleport>
   </div>
 </template>
