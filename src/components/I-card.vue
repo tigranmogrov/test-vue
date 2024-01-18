@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { IPost } from '@/types';
+import { IPost, IPostInfoProps } from '@/types';
 
 defineProps<{
   post: IPost;
@@ -11,7 +11,12 @@ defineProps<{
     <img class="card__avatar" :src="post.avatar" :alt="post.first_name" />
     <div class="card__body">
       <button
-        @click="$emit('getPostInfo', { id: post.id, method: 'show-info' })"
+        @click="
+          $emit('getPostInfo', {
+            id: post.id,
+            method: 'show-info',
+          } as IPostInfoProps)
+        "
         class="card__title">
         {{ post.first_name }} {{ post.last_name }}
       </button>
@@ -19,13 +24,23 @@ defineProps<{
         post.email
       }}</a>
       <button
-        @click="$emit('getPostInfo', { id: post.id, method: 'delete' })"
+        @click="
+          $emit('getPostInfo', {
+            id: post.id,
+            method: 'delete',
+          } as IPostInfoProps)
+        "
         class="btn card__button">
         Delete
       </button>
 
       <button
-        @click="$emit('getPostInfo', { id: post.id, method: 'update' })"
+        @click="
+          $emit('getPostInfo', {
+            id: post.id,
+            method: 'update',
+          } as IPostInfoProps)
+        "
         class="btn card__button">
         Update
       </button>
