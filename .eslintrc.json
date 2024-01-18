@@ -1,0 +1,56 @@
+{
+  "root": true,
+  "env": {
+  "node": true,
+    "vue/setup-compiler-macros": true
+},
+  "extends": [
+  "plugin:vue/vue3-essential",
+  "eslint:recommended",
+  "@vue/typescript/recommended",
+  "prettier"
+],
+  "parserOptions": {
+  "ecmaVersion": 2020
+},
+  "globals": {
+  "Atomics": "readonly",
+    "SharedArrayBuffer": "readonly"
+},
+  "rules": {
+  "func-names": [
+    "error",
+    "always"
+  ],
+    "no-plusplus": [
+    "error",
+    {
+      "allowForLoopAfterthoughts": true
+    }
+  ],
+    "no-tabs": [
+    "error",
+    {
+      "allowIndentationTabs": true
+    }
+  ],
+    "linebreak-style": [
+    "error",
+    "unix"
+  ],
+    "no-multiple-empty-lines": [
+    "error",
+    {
+      "max": 2,
+      "maxEOF": 0
+    }
+  ],
+    "no-undef": "error",
+    "prefer-const": "error",
+    "no-useless-catch": "off",
+    "vue/no-deprecated-slot-attribute": "off",
+    "vue/multi-word-component-names": 0,
+    "@typescript-eslint/no-explicit-any": "off",
+    "@typescript-eslint/no-used": "off"
+}
+}
