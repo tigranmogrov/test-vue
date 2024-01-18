@@ -11,7 +11,7 @@ const props = defineProps<{
 const emits = defineEmits(['updatePost']);
 
 const validationErrors = ref<IErrors | null>(null);
-
+const isDisabled = ref(false);
 const updateFormData = reactive<Omit<IPost, 'avatar' | 'id'>>({
   first_name: '',
   last_name: '',
@@ -35,11 +35,17 @@ const updatePost = () => {
     email: updateFormData.email,
   });
   if (!Object.keys(validationErrors.value).length) {
-    API.patch(`${API_URL}/users/${props.post.id}`, updateFormData).then(
-      (res) => {
+    isDisabled.value = true;
+    API.patch(`${API_URL}/users/${props.post.id}`, updateFormData)
+      .then((res) => {
         emits('updatePost', res.data);
-      }
-    );
+      })
+      .catch((e) => {
+        console.log(e);
+      })
+      .finally(() => {
+        isDisabled.value = false;
+      });
   }
 };
 </script>
@@ -112,6 +118,8 @@ const updatePost = () => {
           placeholder="Address" />
       </div>
     </div>
-    <button type="submit" class="btn btn--submit">Create</button>
+    <button :disabled="isDisabled" type="submit" class="btn btn--submit">
+      Create
+    </button>
   </form>
 </template>
