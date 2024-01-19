@@ -21,6 +21,7 @@ const searchParam = ref('');
 const componentName = ref('');
 const isModalState = ref(false);
 const currentPost = ref<IPost | undefined>(undefined);
+const isDisabled = ref(false);
 const formData = reactive<ICreatePost>({
   name: '',
   email: '',
@@ -59,20 +60,28 @@ const createPost = () => {
   validationErrors.value = validate(formData);
 
   if (!Object.keys(validationErrors.value).length) {
-    API.post(`${API_URL}/users`, formData).then((res) => {
-      const { id, name, email } = res.data;
-      postsData.value.push({
-        id: id,
-        avatar: 'https://reqres.in/img/faces/4-image.jpg',
-        first_name: name,
-        last_name: '',
-        email: email,
-        phone: '',
-        address: '',
+    isDisabled.value = true;
+    API.post(`${API_URL}/users`, formData)
+      .then((res) => {
+        const { id, name, email } = res.data;
+        postsData.value.push({
+          id: id,
+          avatar: 'https://reqres.in/img/faces/4-image.jpg',
+          first_name: name,
+          last_name: '',
+          email: email,
+          phone: '',
+          address: '',
+        });
+        clearFormData(formData);
+        console.log(res.data);
+      })
+      .catch((e) => {
+        console.log(e);
+      })
+      .finally(() => {
+        isDisabled.value = false;
       });
-      clearFormData(formData);
-      console.log(res.data);
-    });
   }
 };
 
@@ -157,7 +166,12 @@ getPosts();
                 {{ validationErrors?.email?.message }}
               </span>
             </div>
-            <button type="submit" class="btn btn--submit">Create</button>
+            <button
+              :disabled="isDisabled"
+              type="submit"
+              class="btn btn--submit">
+              Create
+            </button>
           </form>
           <div class="content__top-inner">
             <i-sorting :options="sortOptions" v-model="selectedSortVal" />
