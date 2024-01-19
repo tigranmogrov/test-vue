@@ -7,9 +7,11 @@ import ISorting from '@/components/I-sorting.vue';
 import ISpinner from '@/components/I-spinner.vue';
 import IUpdatePost from '@/components/I-update-post.vue';
 import { filteredAndSorted } from '@/composable/post/filteredAndSorted';
+import { IErrors, validate } from '@/composable/post/validate';
 import { API_URL, sortOptions } from '@/constants';
 import { API } from '@/fetchApi';
-import { IPost, IPostInfoProps, MethodEnum } from '@/types';
+import { ICreatePost, IPost, IPostInfoProps, MethodEnum } from '@/types';
+import { clearFormData } from '@/utils';
 import { computed, reactive, ref, shallowRef } from 'vue';
 
 const postsData = ref<IPost[]>([]);
@@ -19,6 +21,11 @@ const searchParam = ref('');
 const componentName = ref('');
 const isModalState = ref(false);
 const currentPost = ref<IPost | undefined>(undefined);
+const formData = reactive<ICreatePost>({
+  name: '',
+  email: '',
+});
+const validationErrors = ref<IErrors | null>(null);
 
 const getPosts = () => {
   API.get(`${API_URL}/users`)
@@ -33,10 +40,8 @@ const sortedPosts = computed(() =>
 );
 const findCurrentPost = (id: number) =>
   postsData.value.find((post) => post.id === id);
-
 const getCurrentPost = (id: number) =>
   (currentPost.value = findCurrentPost(id));
-
 const deletePost = (id: number) => {
   API.delete(`${API_URL}/users/${id}`)
     .then((res) => {
@@ -45,18 +50,36 @@ const deletePost = (id: number) => {
     })
     .catch((e) => console.log(e));
 };
-
 const updatePost = (data: IPost) => {
   postsData.value = postsData.value.map((obj) =>
     obj.id === data.id ? { ...data } : obj
   );
+};
+const createPost = () => {
+  validationErrors.value = validate(formData);
+
+  if (!Object.keys(validationErrors.value).length) {
+    API.post(`${API_URL}/users`, formData).then((res) => {
+      const { id, name, email } = res.data;
+      postsData.value.push({
+        id: id,
+        avatar: 'https://reqres.in/img/faces/4-image.jpg',
+        first_name: name,
+        last_name: '',
+        email: email,
+        phone: '',
+        address: '',
+      });
+      clearFormData(formData);
+      console.log(res.data);
+    });
+  }
 };
 
 const removeModal = (state: boolean) => {
   isModalState.value = state;
   currentPost.value = undefined;
 };
-
 const dynamicComponents = reactive({
   'show-info': {
     components: shallowRef(IDetails),
@@ -72,10 +95,8 @@ const dynamicComponents = reactive({
     },
   },
 });
-
 const getComponent = computed(() => dynamicComponents[componentName.value]);
-
-const getPostInfo = (props: IPostInfoProps) => {
+const postAction = (props: IPostInfoProps) => {
   componentName.value = props.method;
   switch (props.method) {
     case MethodEnum.DELETE:
@@ -99,6 +120,45 @@ getPosts();
     <div class="container">
       <div class="content__inner">
         <div class="content__top">
+          <form @submit.prevent="createPost" class="form" novalidate>
+            <div class="form-field">
+              <label class="form-label" data-required for="user-name"
+                >User Name</label
+              >
+              <input
+                name="name"
+                id="user-name"
+                :class="validationErrors?.name?.invalid ? 'field-error' : null"
+                v-model="formData.name"
+                class="form-input"
+                type="text"
+                placeholder="Name" />
+              <span
+                v-if="validationErrors?.name?.invalid"
+                class="form-error-message">
+                {{ validationErrors?.name?.message }}
+              </span>
+            </div>
+            <div class="form-field">
+              <label data-required class="form-label" for="user-email"
+                >User Email</label
+              >
+              <input
+                name="email"
+                id="user-email"
+                :class="validationErrors?.email?.invalid ? 'field-error' : null"
+                v-model="formData.email"
+                class="form-input"
+                type="email"
+                placeholder="Email" />
+              <span
+                v-if="validationErrors?.email?.invalid"
+                class="form-error-message">
+                {{ validationErrors?.email?.message }}
+              </span>
+            </div>
+            <button type="submit" class="btn btn--submit">Create</button>
+          </form>
           <div class="content__top-inner">
             <i-sorting :options="sortOptions" v-model="selectedSortVal" />
             <i-search v-model="searchParam" />
@@ -110,7 +170,7 @@ getPosts();
             v-for="post in sortedPosts"
             :key="post.id"
             :post="post"
-            @getPostInfo="getPostInfo" />
+            @postAction="postAction" />
         </div>
       </div>
     </div>
