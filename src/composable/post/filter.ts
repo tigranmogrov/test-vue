@@ -1,36 +1,34 @@
-import { IPost } from '@/types';
-import { Ref } from 'vue';
-
-interface IFilterArray {
-  [k: string]: any;
+function findSomeText(el: any, keys: string[], search: string): boolean {
+  for (const key of keys) {
+    const value = el[key];
+    if (value.toLowerCase().includes(search.trim().toLowerCase())) {
+      return true;
+    }
+  }
+  return false;
 }
 
-const searchText = (el: string, search: string): boolean => {
-  return el.toLowerCase().includes(search.toLowerCase());
-};
-
-const sortByKey = (data: IFilterArray[], key: string): IFilterArray[] => {
+function sortByKey<T>(data: T[], key: string | number): T[] {
   return [...data].sort((a, b) => {
     if (typeof a[key] === 'string' && typeof b[key] === 'string') {
-      return a[key].localeCompare(b[key]);
+      return (a[key] as unknown as string).localeCompare(
+        b[key] as unknown as string
+      );
     }
-    return a[key] - b[key];
+    if (typeof a[key] === 'number' && typeof b[key] === 'number') {
+      return (a[key] as unknown as number) - (b[key] as unknown as number);
+    }
+    return 0;
   });
-};
+}
 
-export const filteredArray = (
-  postData: IFilterArray[],
+export function filteredArray<T>(
+  data: T[],
   sortBy: string,
-  search: string
-): IFilterArray[] => {
-  let filteredData: IFilterArray[] = [...postData];
+  searchText: string,
+  keys: string[]
+): T[] {
+  const filteredData: T[] = sortByKey(data, sortBy);
 
-  if (sortBy === 'first_name' || sortBy === 'id') {
-    filteredData = sortByKey(filteredData, sortBy);
-  }
-
-  return filteredData.filter(
-    (el) =>
-      searchText(el.first_name, search) || searchText(el.last_name, search)
-  );
-};
+  return filteredData.filter((el) => findSomeText(el, keys, searchText));
+}
