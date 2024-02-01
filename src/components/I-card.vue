@@ -4,6 +4,7 @@ import { IPost, IPostInfoProps } from '@/types';
 defineProps<{
   post: IPost;
 }>();
+defineEmits(['post-action']);
 </script>
 
 <template>
@@ -12,7 +13,7 @@ defineProps<{
     <div class="card__body">
       <button
         @click="
-          $emit('postAction', {
+          $emit('post-action', {
             id: post.id,
             method: 'show-info',
           } as IPostInfoProps)
@@ -25,7 +26,7 @@ defineProps<{
       }}</a>
       <button
         @click="
-          $emit('postAction', {
+          $emit('post-action', {
             id: post.id,
             method: 'delete',
           } as IPostInfoProps)
@@ -36,7 +37,7 @@ defineProps<{
 
       <button
         @click="
-          $emit('postAction', {
+          $emit('post-action', {
             id: post.id,
             method: 'update',
           } as IPostInfoProps)
