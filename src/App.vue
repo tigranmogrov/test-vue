@@ -6,7 +6,7 @@ import ISearch from '@/components/I-search.vue';
 import ISorting from '@/components/I-sorting.vue';
 import ISpinner from '@/components/I-spinner.vue';
 import IUpdatePost from '@/components/I-update-post.vue';
-import { filteredAndSorted } from '@/composable/post/filteredAndSorted';
+import { filteredArray } from '@/composable/post/filter';
 import { IErrors, validate } from '@/composable/post/validate';
 import { API_URL, sortOptions } from '@/constants';
 import { API } from '@/fetchApi';
@@ -36,9 +36,16 @@ const getPosts = () => {
       isLoading.value = false;
     });
 };
+const searchByKeys = ['first_name', 'last_name', 'email'];
 const sortedPosts = computed(() =>
-  filteredAndSorted(postsData, selectedSortVal, searchParam)
+  filteredArray(
+    postsData.value,
+    selectedSortVal.value,
+    searchParam.value,
+    searchByKeys
+  )
 );
+
 const findCurrentPost = (id: number) =>
   postsData.value.find((post) => post.id === id);
 const getCurrentPost = (id: number) =>
@@ -180,11 +187,12 @@ getPosts();
         </div>
         <i-spinner v-if="isLoading" :is-loading="isLoading" />
         <div v-else class="grid-col-4">
+          <div v-if="!sortedPosts.length">Oops...</div>
           <i-card
             v-for="post in sortedPosts"
             :key="post.id"
             :post="post"
-            @postAction="postAction" />
+            @post-action="postAction" />
         </div>
       </div>
     </div>
